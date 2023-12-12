@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop File Upload</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Rhapsody Refiner</h1>
+    <div id="drop-area">
+        <h3>Drag and Drop a File</h3>
+        <p>or</p>
+        <label for="file-input" class="custom-file-upload">
+            <span id="file-upload-text">Choose a file</span>
+        </label>
+        <input type="file" id="file-input" multiple>
+    </div>
+    <div id="selected-file"></div>
+    <div id="dropdown">
+        <label for="processing-state">Select Number of Variations: </label>
+        <select id="processing-state">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+    </div>
+
+    <div id="dropdown">
+        <label for="processing-state">Select Model: </label>
+        <select id="processing-state">
+            <option value="Music Transformer">Music Transformer</option>
+            <option value="Music VAE">MusicVAE</option>
+        </select>
+    </div>
+
+    <button id="upload-button" onclick="uploadFile()">Run Job</button>
+
+    <div id="uploaded-box">
+        <h4>Uploaded</h4>
+        <div id="file-list"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+    <script>
+        // Connect to the WebSocket server
+        const socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Event handler for the 'connect' event
+        socket.on('connect', function() {
+            console.log('Connected to the WebSocket server');
+        });
+
+        // Event handler for the 'disconnect' event
+        socket.on('disconnect', function() {
+            console.log('Disconnected from the WebSocket server');
+        });
+
+        // Event handler for the 'processing_complete' event
+        socket.on('processing_complete', function(data) {
+            let fileContainer = document.getElementById(data.filename)
+            fileContainer.classList.remove('processing');
+            fileContainer.classList.add('processed');
+
+            let processingIcon = document.getElementById(data.filename.concat("_icon"))
+            processingIcon.src = 'static/images/tick.png';
+            processingIcon.alt = 'Processed';
+
+        });
+
+        socket.on("job_complete", function(data) {
+            
+            let id = data.filename.concat(`_Job ${data.job}`, "icon");
+            let jobProcessingIcon = document.getElementById(id);
+            jobProcessingIcon.src = 'static/images/tick.png';
+            jobProcessingIcon.alt = 'Processed';
+            
+            let filename = `${data.job}_`.concat(selectedFile.name);
+
+            let downloadLink = document.createElement('a');
+            downloadLink.href = `variations/${filename}`;
+            downloadLink.download = filename;
+            downloadLink.textContent = filename;
+            console.log(downloadLink);
+
+            let jobListName = document.getElementById(filename);
+            jobListName.innerHTML = "";
+            jobListName.appendChild(downloadLink);
+            console.log(jobListName.innerHTML);
+
+        });
+
+        let dropArea = document.getElementById('drop-area');
+        let fileList = document.getElementById('file-list');
+        let fileInput = document.getElementById('file-input');
+        let processingStateSelect = document.getElementById('processing-state');
+        let selectedFile;
+
+        document.getElementById('file-input').addEventListener('change', function () {
+            console.log(this.files);
+            handleFiles(this.files);
+        });
+        
+        dropArea.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            dropArea.classList.add('highlight');
+        });
+
+        dropArea.addEventListener('dragleave', function () {
+            dropArea.classList.remove('highlight');
+        });
+
+        dropArea.addEventListener('drop', function (e) {
+            e.preventDefault();
+            dropArea.classList.remove('highlight');
+            handleFiles(e.dataTransfer.files);
+            displaySelectedFile();
+        });
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                selectedFile = files[0];
+                displaySelectedFile();
+            }
+        }
+
+        function isMidiFile(file) {
+            return file.type === 'audio/midi' || file.name.toLowerCase().endsWith('.midi') || file.name.toLowerCase().endsWith('.mid');
+        }
+
+        function uploadFile(file) {
+
+            if (!selectedFile) {
+                alert("Please upload a valid MIDI file.");
+                return;
+            } else if (!isMidiFile(selectedFile)) {
+                alert('The file you have selected is not a midi file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            // Create a container div for each file
+            let fileContainer = document.createElement('div');
+            fileContainer.id = selectedFile.name
+            fileContainer.className = 'file-container processing';
+
+            // Add the file info container
+            let fileInfoContainer = document.createElement('div');
+            fileInfoContainer.className = 'file-info';
+            
+            // Add processing icon as an image
+            let processingIcon = document.createElement('img');
+            processingIcon.src = 'static/images/processing.gif'; // Replace with the path to your processing icon image
+            processingIcon.alt = 'Processing...';
+            processingIcon.id = selectedFile.name.concat("_icon")
+            processingIcon.style.width = '20px'; // Adjust the width as needed
+            
+            // Add the file name to the container
+            let fileNameElement = document.createElement('div');
+            fileNameElement.textContent = selectedFile.name;
+            fileNameElement.style.marginLeft = '10px'; // Adjust the margin as needed
+            // fileNameElement.className = 'uploaded-file-name'
+            
+            // Append the file name and processing icon to the file info container
+            fileInfoContainer.appendChild(processingIcon);
+            fileInfoContainer.appendChild(fileNameElement);
+
+            // Append the file info container to the file container
+            fileContainer.appendChild(fileInfoContainer);
+
+            let jobList = document.createElement('div');
+            jobList.className = 'job-list';
+
+            // Add jobs to the job list based on the selected processing state
+            let numJobs = parseInt(processingStateSelect.value, 10);
+            for (let i = 1; i <= numJobs; i++) {
+                let jobListItem = document.createElement('div');
+                jobListItem.className = 'job-list-item';
+                
+                let jobProcessingIcon = document.createElement('img');
+                jobProcessingIcon.src = 'static/images/processing.gif'; // Replace with the path to your processing icon image
+                jobProcessingIcon.alt = 'Processing...';
+                jobProcessingIcon.style.width = '20px'; 
+                jobProcessingIcon.id = selectedFile.name.concat(`_Job ${i}`, "icon");
+                jobListItem.appendChild(jobProcessingIcon);
+
+                let jobListName = document.createElement("div");
+                jobListName.textContent = `${i}_`.concat(selectedFile.name);
+                jobListName.id = `${i}_`.concat(selectedFile.name);
+                jobListItem.appendChild(jobListName);
+
+                jobList.appendChild(jobListItem);
+            }
+
+            formData.append('jobs', numJobs); 
+
+            // Append the job list to the file container
+            fileContainer.appendChild(jobList);
+
+            // Append the container to the file list
+            fileList.insertBefore(fileContainer, fileList.firstChild);
+
+            // Include sid in the URL or as a query parameter
+            const url = `/upload?sid=${socket.id}`;
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                })
+            .then(response => response.text())
+            .then(result => {
+                console.log(result);
+                // Simulate processing time (replace with actual processing logic)
+                setTimeout(() => {
+                    // Replace processing icon with tick icon
+                    // processingIcon.src = 'static/images/tick.png'; // Replace with the path to your tick icon image
+                    // processingIcon.alt = 'Processed';
+                }, 2000); // Adjust the time as needed
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Replace processing icon with error icon
+                processingIcon.src = 'path/to/error-icon.png'; // Replace with the path to your error icon image
+                processingIcon.alt = 'Error';
+            });
+
+            // selectedFile = null; // Clear the selected file after uploading
+            // displaySelectedFile();
+        }
+
+        function displaySelectedFile() {
+            let selectedFileDiv = document.getElementById('selected-file');
+            selectedFileDiv.innerHTML = '';
+
+            if (selectedFile) {
+                let fileNameElement = document.createElement('div');
+                fileNameElement.innerHTML = `<b>Uploaded File:</b> ${selectedFile.name}`;
+                selectedFileDiv.appendChild(fileNameElement);
+            }
+        }
+
+        fileList.addEventListener('click', function (e) {
+            let target = e.target;
+            let fileContainer = findAncestor(target, 'file-container');
+            
+            if (fileContainer) {
+                // Toggle the job list visibility when clicking on the file container
+                let jobList = fileContainer.querySelector('.job-list');
+                if (jobList) {
+                    jobList.style.display = jobList.style.display === 'none' ? 'block' : 'none';
+                }
+            }
+        });
+
+        function findAncestor(element, className) {
+            while ((element = element.parentElement) && !element.classList.contains(className));
+            return element;
+        }
+
+    </script>
+</body>
+</html>
+

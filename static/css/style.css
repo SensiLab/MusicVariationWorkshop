@@ -1,0 +1,115 @@
+h1 {
+    color: brown;
+    text-align: center;
+    padding: 10px;
+}
+
+#drop-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+#drop-area.highlight {
+    border-color: #2185d0;
+}
+
+#file-input {
+    display: none;
+}
+
+.custom-file-upload {
+    cursor: pointer;
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #2185d0;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.custom-file-upload:hover {
+    background-color: #106ba3;
+}
+
+#file-list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* .file-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px; =
+} */
+
+.file-container {
+    display: flex;
+    flex-direction: column; /* Display the file name and job list in a column */
+    align-items: flex-start;
+    margin-bottom: 5px; /* Adjust as needed for spacing between files */
+    border: 1px solid #ccc; /* Add a 1px solid border with a light gray color */
+    padding: 5px; /* Add padding for better visual appearance */
+    transition: background-color 0.5s; /* Add a smooth transition effect for background color changes */
+    cursor: pointer; /* Add a pointer cursor for clickable elements */
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+}
+
+.file-container img {
+    width: 20px; /* Adjust as needed */
+    margin-right: 5px; /* Adjust as needed for spacing between icon and file name */
+}
+
+#file-list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.file-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px; /* Adjust as needed for spacing between files */
+        border: 1px solid #ccc; /* Add a 1px solid border with a light gray color */
+        padding: 5px; /* Add padding for better visual appearance */
+    }
+
+.file-container img {
+    width: 20px; /* Adjust as needed */
+    margin-right: 5px; /* Adjust as needed for spacing between icon and file name */
+}
+
+.processing {
+    background-color: #FFD700; /* Light orange color for processing state */
+}
+
+.processed {
+    background-color: #90EE90; /* Light green color for processed state */
+}
+
+#dropdown {
+    margin-bottom: 10px;
+}
+
+#selected-file {
+    margin-bottom:10px;
+}
+
+.job-list {
+    display: none; /* Initially hide the job list */
+}
+
+.job-list-item {
+    display : flex;
+    margin-top: 5px; /* Adjust as needed for spacing between jobs */
+}
