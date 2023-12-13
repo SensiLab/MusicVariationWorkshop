@@ -1,4 +1,7 @@
 
+from gevent import monkey
+monkey.patch_all()
+
 import os
 import time
 
@@ -7,11 +10,13 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_socketio import SocketIO
 from werkzeug.utils import secure_filename
 
+from generate_melody import MagentaMusicTransformer
+
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
 VARIATION_FOLDER = "variations"
-SOCKETIO_REDIS_URL = 'redis://localhost:6379/0'  
+SOCKETIO_REDIS_URL = 'redis://130.194.71.74/:6379/0'  
 
 # Configure Celery with Redis as the backend
 app.config.from_pyfile('celery_config.py')
@@ -28,13 +33,14 @@ celery = Celery(
 )
 celery.conf.update(app.config)
 
+magenta_transformer = MagentaMusicTransformer("model/melody_conditioned_model_16.ckpt")
+
 @celery.task
 def generate_variation(input_path, output_filename, jobs, socket_sid):
     for i in range(jobs):
-        time.sleep(2)
+
         output_path = app.config["VARIATION_FOLDER"] + f'/{i+1}_' + output_filename
-        with open(input_path, 'rb') as infile, open(output_path, 'wb') as outfile:
-            outfile.write(infile.read())
+        magenta_transformer.generate(input_path, output_path)
 
         socketio.emit('job_complete', {'filename': os.path.basename(output_filename), 'job' : (i+1)}, room=socket_sid)
     
@@ -87,5 +93,5 @@ def handle_disconnect():
     print(f"Client disconnected: {request.sid}")
 
 if __name__=="__main__":
-    socketio.run(app, host="127.0.0.1", port=8080, debug=True)
+    socketio.run(app, host="0.0.0.0", port=8008, debug=True)
 
