@@ -32,11 +32,12 @@
         <label for="processing-state">Select Model: </label>
         <select id="processing-state">
             <option value="Music Transformer">Music Transformer</option>
-            <option value="Music VAE">MusicVAE</option>
+            <option value="MusicBert Variation">MusicVAE</option>
         </select>
     </div>
 
     <button id="upload-button" onclick="uploadFile()">Run Job</button>
+    <button id="logout" onclick="logout()">Logout</button>
 
     <div id="uploaded-box">
         <h4>Uploaded</h4>
@@ -117,6 +118,10 @@
             handleFiles(e.dataTransfer.files);
             displaySelectedFile();
         });
+
+        function logout(){
+            window.location.href = "/logout"
+        }
 
         function handleFiles(files) {
             if (files.length > 0) {
