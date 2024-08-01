@@ -26,10 +26,11 @@ class MagentaMusicTransformer:
 
         # Set up HParams.
         hparams = trainer_lib.create_hparams(hparams_set='transformer_tpu')
+        # print(hparams)
         trainer_lib.add_problem_hparams(hparams, self.problem)
         hparams.num_hidden_layers = 16
         hparams.sampling_method = 'random'
-
+        # print(self.problem)
         # Set up decoding HParams.
         decode_hparams = decoding.decode_hparams()
         decode_hparams.alpha = 0.0
@@ -42,14 +43,15 @@ class MagentaMusicTransformer:
             'transformer', hparams, run_config,
             decode_hparams=decode_hparams
         )
-    
+        # print(self.estimator.get_variable_names())
+
     def generate(self, melody_path: str, output_path: str):
 
         start = timeit.default_timer()
         melody_conditioned_encoders = self.problem.get_feature_encoders()
         melody_ns = utils.get_melody_ns(melody_path)
         inputs = melody_conditioned_encoders['inputs'].encode_note_sequence(melody_ns)
-
+        # print(inputs)
         # date_and_time = time.strftime('%Y-%m-%d_%H%M%S')
         # base_name = '%s_%s-*-of-%03d.mid' % ('melody', date_and_time, self.num_samples)
 
@@ -76,6 +78,6 @@ class MagentaMusicTransformer:
 
 if __name__ == "__main__":
 
-    magenta_transformer = MagentaMusicTransformer("../model/melody_conditioned_model_16.ckpt")
-    magenta_transformer.generate("test.mid")
-
+    magenta_transformer = MagentaMusicTransformer("model/melody_conditioned_model_16.ckpt")
+    magenta_transformer.generate("test4.mid", "generated.mid")
+    # print(magenta_transformer.estimator)

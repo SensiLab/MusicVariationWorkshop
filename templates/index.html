@@ -76,7 +76,7 @@
             jobProcessingIcon.src = 'static/images/tick.png';
             jobProcessingIcon.alt = 'Processed';
             
-            let filename = `${data.job}_`.concat(selectedFile.name);
+            let filename = `${data.job}_`.concat(data.filename);
 
             let downloadLink = document.createElement('a');
             downloadLink.href = `variations/${filename}`;
