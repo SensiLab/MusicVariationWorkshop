@@ -36,6 +36,79 @@
         </select>
     </div>
 
+    <div id="controls">
+        <label for="attribute-container" class="controlLabel">Select Attributes to Alter</label>
+        <div id="attribute-container" class="AttributeControlContainer">
+            <div>
+                <label for="BarCheckbox">Bar</label>
+                <input type="checkbox" id="BarCheckbox" name="BarCheckbox">
+            </div>
+            <div>
+                <label for="PositionCheckbox">Position</label>
+                <input type="checkbox" id="PositionCheckbox" name="PositionCheckbox">
+            </div>
+            <div>
+                <label for="InstrumentCheckbox">Instrument</label>
+                <input type="checkbox" id="InstrumentCheckbox" name="InstrumentCheckbox">
+            </div>
+            <div>
+                <label for="PitchCheckbox">Pitch</label>
+                <input type="checkbox" id="PitchCheckbox" name="PitchCheckbox">
+            </div>
+            <div>
+                <label for="DurationCheckbox">Duration</label>
+                <input type="checkbox" id="DurationCheckbox" name="DurationCheckbox">
+            </div>
+            <div>
+                <label for="TimesignatureCheckbox">Time Signature</label>
+                <input type="checkbox" id="TimesignatureCheckbox" name="TimesignatureCheckbox">
+            </div>
+            <div>
+                <label for="TempoCheckbox">Tempo</label>
+                <input type="checkbox" id="TempoCheckbox" name="TempoCheckbox">
+            </div>
+        </div>
+        <div class="AttributeControlContainer" >
+            <div id="BarSelectionContainer">
+                <div class="BarSelectionRow">
+                    <label for="startBar" class="startBarLabel">Start Bar</label>
+                    <input type="text" size=5 id="startBar1" name="startBar1">
+                    <label for="endBar" class="endBarLabel">End Bar</label>
+                    <input type="text"  size=5 id="endBar1" name="endBar1">
+                </div>
+            </div>
+            <button id="addBars">Add More</button>
+        </div>
+        <label for="VariationSlidecontainer" class="controlLabel">Variation Percentage</label>
+        <div>
+            <label for="BarLevelCheckbox">Alter Entire Bar</label>
+            <input type="checkbox" id="BarLevelCheckbox" name="BarLevelCheckbox">
+        </div>
+        <div id="VariationSlidecontainer" class="AttributeControlContainer">
+            <input type="range" min="1" max="100" value="50" class="slider" id="varitionPercentage">
+            <span class="slider-value" id="VariationSliderValue">50%</span>
+        </div>
+        <label for="NewNotesContainer" class="controlLabel">New Notes</label>
+        <div id="NewNotesContainer" class="AttributeControlContainer">
+            <div class="NewNotesCheckboxContainer">
+                <label for="NewNotesCheckBox">Add New Notes</label>
+                <input type="checkbox" id="NewNotesCheckBox" name="NewNotesCheckbox">
+            </div>
+            <div class="NewNotesAmountSliderContainer">
+                <input type="range" min="1" max="100" value="50" class="slider" id="NewNotesSlider">
+                <span class="slider-value" id="NewNotesSliderValue">50%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="MidiVisualiserContainer">
+        <!-- <midi-player
+            src="https://magenta.github.io/magenta-js/music/demos/melody.mid"
+            sound-font visualizer=".visualizer">
+        </midi-player> -->
+        <midi-visualizer type="piano-roll" id="myVisualizer" class="visualizer" src="static/midi/generated.mid"></midi-visualizer>
+    </div>
+
     <button id="upload-button" onclick="uploadFile()">Run Job</button>
     <button id="logout" onclick="logout()">Logout</button>
 
@@ -44,6 +117,7 @@
         <div id="file-list"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.5.0"></script>
     <script>
         // Connect to the WebSocket server
         const socket = io.connect('http://' + document.domain + ':' + location.port);
@@ -97,6 +171,81 @@
         let fileInput = document.getElementById('file-input');
         let processingStateSelect = document.getElementById('processing-state');
         let selectedFile;
+        let inputBarNum = 2;
+
+        const variationSlider = document.getElementById('varitionPercentage');
+        const newnotesSlider = document.getElementById("NewNotesSlider");
+
+        const variationSliderValue = document.getElementById('VariationSliderValue');
+        const newnotesSliderValue = document.getElementById("NewNotesSliderValue");
+
+        variationSlider.addEventListener('input', () => {
+            variationSliderValue.textContent = variationSlider.value + "%";
+        });
+
+        newnotesSlider.addEventListener('input', () => {
+            newnotesSliderValue.textContent = newnotesSlider.value + "%"
+        });
+
+        const bar_level_checkbox = document.getElementById("BarLevelCheckbox");
+
+        bar_level_checkbox.addEventListener('change', function() {
+            if (bar_level_checkbox.checked) {
+                variationSlider.classList.add('disabled-slider');
+            } else {
+                variationSlider.classList.remove('disabled-slider');
+            }
+        });
+
+        const new_notes_checkbox = document.getElementById("NewNotesCheckBox");
+        newnotesSlider.classList.add('disabled-slider');
+
+        new_notes_checkbox.addEventListener('change', function() {
+            if (new_notes_checkbox.checked) {
+                newnotesSlider.classList.remove('disabled-slider');
+            } else {
+                newnotesSlider.classList.add('disabled-slider');
+            }
+        });
+
+        document.getElementById('addBars').addEventListener('click', function(){
+            const BarSelectionContainer = document.getElementById('BarSelectionContainer');
+            const newBoxRow = document.createElement('div');
+            newBoxRow.className = 'BarSelectionRow';
+
+            const input1 = document.createElement('input');
+            const input1_label = "startBar" + inputBarNum;
+            input1.type = 'text';
+            input1.size = 5;
+            input1.id = input1_label;
+            input1.name = input1_label;
+
+            const label1 = document.createElement('label');
+            label1.for = input1_label
+            label1.innerText = 'Start Bar';
+            label1.className ="startBarLabel";
+
+            const input2 = document.createElement('input');
+            const input2_label = "endBar" + inputBarNum;
+            input2.type = 'text';
+            input2.size = 5;
+            input2.id = input2_label;
+            input2.name = input2_label;
+
+            inputBarNum += 1;
+
+            const label2 = document.createElement('label');
+            label2.for = input2_label;
+            label2.innerText = "End Bar";
+            label2.className = "endBarLabel";
+
+            newBoxRow.appendChild(label1);
+            newBoxRow.appendChild(input1);
+            newBoxRow.appendChild(label2)
+            newBoxRow.appendChild(input2);
+
+            BarSelectionContainer.parentNode.insertBefore(newBoxRow, BarSelectionContainer.nextSibling);
+        });
 
         document.getElementById('file-input').addEventListener('change', function () {
             console.log(this.files);

@@ -113,3 +113,48 @@ h1 {
     display : flex;
     margin-top: 5px; /* Adjust as needed for spacing between jobs */
 }
+
+.attribute-container {
+    display: flex;
+    gap: 10px;
+}
+.attribute-container label {
+    margin-right: 5px;
+}
+
+.VariationSlidecontainer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.slider-value {
+    font-weight: bold;
+}
+
+.controlLabel {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.AttributeControlContainer {
+    padding-bottom: 1%;
+}
+
+.disabled-slider {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.BarSelectionRow {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.startBarLabel{
+    padding-right: 10px;
+}
+
+.endBarLabel{
+    padding-right: 10px;
+    padding-left: 10px;
+}
