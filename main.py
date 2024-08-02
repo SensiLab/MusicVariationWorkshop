@@ -3,6 +3,7 @@ from gevent import monkey
 monkey.patch_all()
 
 import os
+import sys
 import time
 
 from celery import Celery
@@ -14,6 +15,9 @@ from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
+
+from MusicVariationBert.generation import generate_variations, write_variations, MusicBERTModel
+from MusicVariationBert.utils import reverse_label_dict
 
 # from generate_melody import MagentaMusicTransformer
 
@@ -64,14 +68,66 @@ def new_user(username, password):
     db.session.add(new_user)
     db.session.commit()
 
+# models
 # magenta_transformer = MagentaMusicTransformer("model/melody_conditioned_model_16.ckpt")
+
+roberta_base = MusicBERTModel.from_pretrained('.', 
+    checkpoint_file='checkpoints/checkpoint_last_musicbert_base_w_genre_head.pt'
+)
+roberta_base.eval()
+
+label_dict = roberta_base.task.label_dictionary
+reversed_dict = reverse_label_dict(label_dict)
+
+# set temperature
+temp = 1 
+
+temp_bar = 1
+temp_pos = 1
+temp_ins = 1
+temp_pitch = 3
+temp_dur = 1
+temp_vel = 3 
+temp_sig = 1
+temp_tempo = 1
+
+# create temperature dict
+temperature_dict = {
+    0 : temp_bar,
+    1 : temp_pos,
+    2 : temp_ins,
+    3 : temp_pitch,
+    4 : temp_dur,
+    5 : temp_vel,
+    6 : temp_sig,
+    7 : temp_tempo,
+}
+
+
+# 0: bar | 1: position | 2: instrument | 3: pitch | 4: duration | 5: velocity | 6: time signature | 7: tempo 
+attributes = [3, 4]
+bars = [(3, 5)]
 
 @celery.task
 def generate_variation(input_path, output_filename, jobs, socket_sid):
     for i in range(jobs):
 
         output_path = app.config["VARIATION_FOLDER"] + f'/{i+1}_' + output_filename
+
         # magenta_transformer.generate(input_path, output_path)
+        variations =generate_variations(filename=input_path,
+                                        n_var=1,
+                                        roberta_base=roberta_base,
+                                        label_dict=label_dict,
+                                        reversed_dict=reversed_dict,
+                                        new_notes=False,
+                                        variation_percentage=50,
+                                        attributes=attributes,
+                                        temperature_dict=temperature_dict,
+                                        bars=bars,
+                                        bar_level=False)
+        
+        write_variations(variations, output_path, reversed_dict)
 
         socketio.emit('job_complete', {'filename': os.path.basename(output_filename), 'job' : (i+1)}, room=socket_sid)
     
