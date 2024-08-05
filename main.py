@@ -109,7 +109,7 @@ attributes = [3, 4]
 bars = [(3, 5)]
 
 @celery.task
-def generate_variation(input_path, output_filename, jobs, socket_sid):
+def generate_variation(input_path, output_filename, jobs, socket_sid, variation_args):
     for i in range(jobs):
 
         output_path = app.config["VARIATION_FOLDER"] + f'/{i+1}_' + output_filename
@@ -181,13 +181,37 @@ def upload_file():
 
     # Get the numberOfJobs value from the form data
     jobs = request.form.get('jobs', type=int)
+    bar = request.form.get('bar', type=str)
+    position = request.form.get('position', type=str)
+    instrument = request.form.get('instrument', type=str)
+    pitch = request.form.get('pitch', type=str)
+    duration = request.form.get('duration', type=str)
+    timesignature = request.form.get('timesignature', type=str)
+    tempo = request.form.get('tempo', type=str)
+
+    attributes = [bar, position, instrument, pitch, duration, timesignature, tempo]
+    bars = request.form.getlist('numbers[]', type=int)
+    barlevel = request.form.get('barlevel', type=str)
+    variation_amount = request.form.get('variationamount', type=int)
+    newnotes = request.form.get('newnotes', type=str)
+    newnotes_amount = request.form.get('newnotesamount', type=int)
+
+    variation_args = {
+        "attributes" : attributes,
+        "bars" : bars,
+        "barlevel" : barlevel,
+        "variation_amount" : variation_amount,
+        "newnotes" : newnotes,
+        "newnotes_amount" : newnotes_amount
+    }
+
 
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
 
     # Add the file and numberOfJobs to the Celery task queue
-    generate_variation.apply_async(args=[filepath, file.filename, jobs, sid])
+    generate_variation.apply_async(args=[filepath, file.filename, jobs, sid, variation_args])
 
 
     # Send a JSON response to the client

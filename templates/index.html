@@ -243,8 +243,7 @@
             newBoxRow.appendChild(input1);
             newBoxRow.appendChild(label2)
             newBoxRow.appendChild(input2);
-
-            BarSelectionContainer.parentNode.insertBefore(newBoxRow, BarSelectionContainer.nextSibling);
+            BarSelectionContainer.insertBefore(newBoxRow, BarSelectionContainer.lastChild);
         });
 
         document.getElementById('file-input').addEventListener('change', function () {
@@ -350,7 +349,52 @@
             }
 
             formData.append('jobs', numJobs); 
+            
+            // send control attributes
+            let bar = document.getElementById('BarCheckbox').checked;
+            let position = document.getElementById('PositionCheckbox').checked;
+            let instrument = document.getElementById('InstrumentCheckbox').checked;
+            let pitch = document.getElementById('PitchCheckbox').checked;
+            let duration = document.getElementById("DurationCheckbox").checked;
+            let timesignature = document.getElementById('TimesignatureCheckbox').checked;
+            let tempo = document.getElementById('TempoCheckbox').checked;
 
+            formData.append('bar', bar);
+            formData.append('position', position);
+            formData.append('instrument', instrument);
+            formData.append('pitch', pitch);
+            formData.append('duration', duration);
+            formData.append('timesignature', timesignature);
+            formData.append('tempo', tempo);
+
+            // TODO: CHECK VALID BAR VALUES
+            // retrieve bars
+            const bars = [];
+            for (let i = 1; i < inputBarNum; i++) {
+                let startBar = document.getElementById('startBar' + i).value;
+                let endBar = document.getElementById('endBar' + i).value;
+                bars.push(startBar);
+                bars.push(endBar);
+            }
+
+            bars.forEach((num, index) => {
+                formData.append('numbers[]', num);
+            });
+
+            // get variation amount
+            let barlevel = document.getElementById('BarLevelCheckbox').checked;
+            formData.append('barlevel', barlevel);
+
+            let variationamount = document.getElementById('varitionPercentage').value;
+            formData.append('variationamount', variationamount);
+
+            // new notes
+            let newnotes = document.getElementById('NewNotesCheckBox').checked;
+            formData.append('newnotes', newnotes);
+
+            let newnotesamount = document.getElementById('NewNotesSlider').value;
+            formData.append('newnotesamount', newnotesamount);
+            
             // Append the job list to the file container
             fileContainer.appendChild(jobList);
 
