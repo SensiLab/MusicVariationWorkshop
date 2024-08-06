@@ -5,6 +5,7 @@ monkey.patch_all()
 import os
 import sys
 import time
+import traceback
 
 from celery import Celery
 from flask import Flask, render_template, request, jsonify, send_from_directory, url_for, redirect, session
@@ -129,6 +130,12 @@ def generate_variation(input_path, output_filename, jobs, socket_sid, variation_
         barlevel = True
     else:
         barlevel = False
+    
+    # determine if using multinomial sample
+    if barlevel:
+        multinomial_sample = True
+    else:
+        multinomial_sample = False
 
     # convert new notes to correct type
     if variation_args["newnotes"] == 'true':
@@ -144,19 +151,26 @@ def generate_variation(input_path, output_filename, jobs, socket_sid, variation_
         output_path = os.path.join(app.config["VARIATION_FOLDER"], username) + f'/{i+1}_' + output_filename
 
         # magenta_transformer.generate(input_path, output_path)
-        variations =generate_variations(filename=input_path,
-                                        n_var=1,
-                                        roberta_base=roberta_base,
-                                        label_dict=label_dict,
-                                        reversed_dict=reversed_dict,
-                                        new_notes=newnotes,
-                                        variation_percentage=variation_args["variation_amount"],
-                                        attributes=attributes,
-                                        temperature_dict=temperatures,
-                                        bars=bars,
-                                        bar_level=barlevel)
+        try:
+            variations =generate_variations(filename=input_path,
+                                            n_var=1,
+                                            roberta_base=roberta_base,
+                                            label_dict=label_dict,
+                                            reversed_dict=reversed_dict,
+                                            new_notes=newnotes,
+                                            variation_percentage=variation_args["variation_amount"],
+                                            attributes=attributes,
+                                            temperature_dict=temperatures,
+                                            bars=bars,
+                                            bar_level=barlevel,
+                                            multinomial_sample=multinomial_sample)
         
-        write_variations(variations, output_path, reversed_dict)
+            write_variations(variations, output_path, reversed_dict)
+        except KeyError as e:
+            print(traceback.format_exc())
+            socketio.emit('job_failed', {'filename': os.path.basename(output_filename), 'job' : (i+1)}, room=socket_sid)
+
+            return
 
         socketio.emit('job_complete', {'filename': os.path.basename(output_filename), 'job' : (i+1)}, room=socket_sid)
     
@@ -231,7 +245,7 @@ def upload_file():
     variation_amount = request.form.get('variationamount', type=int)
     newnotes = request.form.get('newnotes', type=str)
     newnotes_amount = request.form.get('newnotesamount', type=int)
-    temperatures = request.form.getlist("temperatures[]", type=int)
+    temperatures = request.form.getlist("temperatures[]", type=float)[1:]
 
     variation_args = {
         "attributes" : attributes,

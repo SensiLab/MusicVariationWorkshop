@@ -214,6 +214,21 @@
 
         });
 
+        socket.on("job_failed", function(data) {
+            let id = data.filename.concat(`_Job ${data.job}`, "icon");
+            let jobProcessingIcon = document.getElementById(id);
+            jobProcessingIcon.src = 'static/images/failed.jpg';
+            jobProcessingIcon.alt = 'Failed';
+
+            let fileContainer = document.getElementById(data.filename)
+            fileContainer.classList.remove('processing');
+            fileContainer.classList.add('failed');
+
+            let processingIcon = document.getElementById(data.filename.concat("_icon"))
+            processingIcon.src = 'static/images/failed.jpg';
+            processingIcon.alt = 'Failed';
+        });
+
         let dropArea = document.getElementById('drop-area');
         let fileList = document.getElementById('file-list');
         let fileInput = document.getElementById('file-input');
@@ -503,6 +518,7 @@
             temperatures.push(temperatureSlider.value/100);
             temperatures.push(barTemperatureSlider.value/100);
             temperatures.push(positionTemperatureSlider.value/100);
+            temperatures.push(instrumentTemperatureSlider.value/100);
             temperatures.push(pitchTemperatureSlider.value/100);
             temperatures.push(durationTemperatureSlider.value/100);
             temperatures.push(timesignatureTemperatureSlider.value/100);

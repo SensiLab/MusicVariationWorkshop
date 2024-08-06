@@ -97,6 +97,10 @@ h1 {
     background-color: #90EE90; /* Light green color for processed state */
 }
 
+.failed {
+    background-color: #eb5060; /* Light green color for processed state */
+}
+
 #dropdown {
     margin-bottom: 10px;
 }
