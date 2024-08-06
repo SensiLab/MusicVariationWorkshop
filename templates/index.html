@@ -508,8 +508,6 @@
             temperatures.push(timesignatureTemperatureSlider.value/100);
             temperatures.push(tempoTemperatureSlider.value/100);
 
-            console.log(temperatures)
-
             temperatures.forEach((num, index) => {
                 formData.append('temperatures[]', num);
             });

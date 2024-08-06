@@ -7,12 +7,13 @@ import sys
 import time
 
 from celery import Celery
-from flask import Flask, render_template, request, jsonify, send_from_directory, url_for, redirect
+from flask import Flask, render_template, request, jsonify, send_from_directory, url_for, redirect, session
 from flask_socketio import SocketIO
 from werkzeug.utils import secure_filename
 
 
 from flask_sqlalchemy import SQLAlchemy
+import flask_login
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 
@@ -109,7 +110,7 @@ attributes = [3, 4]
 bars = [(3, 5)]
 
 @celery.task
-def generate_variation(input_path, output_filename, jobs, socket_sid, variation_args):
+def generate_variation(input_path, output_filename, jobs, socket_sid, variation_args, username):
 
     # convert attributes to correct format
     attributes = []
@@ -140,7 +141,7 @@ def generate_variation(input_path, output_filename, jobs, socket_sid, variation_
 
     for i in range(jobs):
 
-        output_path = app.config["VARIATION_FOLDER"] + f'/{i+1}_' + output_filename
+        output_path = os.path.join(app.config["VARIATION_FOLDER"], username) + f'/{i+1}_' + output_filename
 
         # magenta_transformer.generate(input_path, output_path)
         variations =generate_variations(filename=input_path,
@@ -156,12 +157,6 @@ def generate_variation(input_path, output_filename, jobs, socket_sid, variation_
                                         bar_level=barlevel)
         
         write_variations(variations, output_path, reversed_dict)
-        print(attributes)
-        print(bars)
-        print(barlevel)
-        print(newnotes)
-        print(variation_args["variation_amount"])
-        print(variation_args["newnotes_amount"])
 
         socketio.emit('job_complete', {'filename': os.path.basename(output_filename), 'job' : (i+1)}, room=socket_sid)
     
@@ -187,6 +182,13 @@ def login():
     username = request.form['username']
     password = request.form['password']
     user = User.query.filter_by(username=username).first()
+    session["username"] = username
+
+    if not os.path.isdir(os.path.join(app.config["UPLOAD_FOLDER"], username)):
+        os.mkdir(os.path.join(app.config["UPLOAD_FOLDER"], username))
+    
+    if not os.path.isdir(os.path.join(app.config["VARIATION_FOLDER"], username)):
+        os.mkdir(os.path.join(app.config["VARIATION_FOLDER"], username))
 
     if user and bcrypt.check_password_hash(user.password_hash, password):
         login_user(user)
@@ -243,11 +245,11 @@ def upload_file():
 
 
     filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], session["username"], filename)
     file.save(filepath)
 
     # Add the file and numberOfJobs to the Celery task queue
-    generate_variation.apply_async(args=[filepath, file.filename, jobs, sid, variation_args])
+    generate_variation.apply_async(args=[filepath, file.filename, jobs, sid, variation_args, session["username"]])
 
 
     # Send a JSON response to the client
@@ -257,7 +259,9 @@ def upload_file():
 
 @app.route('/variations/<filename>')
 def download_file(filename):
-    return send_from_directory(app.config['VARIATION_FOLDER'], filename, as_attachment=True)
+    return send_from_directory(os.path.join(app.config['VARIATION_FOLDER'], session["username"]), 
+                               filename, 
+                               as_attachment=True)
 
 
 @socketio.on('connect')
