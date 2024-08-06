@@ -110,6 +110,34 @@ bars = [(3, 5)]
 
 @celery.task
 def generate_variation(input_path, output_filename, jobs, socket_sid, variation_args):
+
+    # convert attributes to correct format
+    attributes = []
+    for attribute, include in enumerate(variation_args["attributes"]):
+        if include == 'true':
+            attributes.append(attribute)
+    
+    # convert bars to correct format
+    raw_bars = variation_args["bars"]
+    bars = []
+    for i in range(len(raw_bars)//2):
+        bars.append((raw_bars[2*i], raw_bars[2*i+1]))
+
+    # convert bar level to correct type
+    if variation_args["barlevel"] == "true":
+        barlevel = True
+    else:
+        barlevel = False
+
+    # convert new notes to correct type
+    if variation_args["newnotes"] == 'true':
+        newnotes = True
+    else:
+        newnotes = False
+
+    # convert temperatures to correct form
+    temperatures = {i:t for i, t in enumerate(variation_args["temperatures"])}
+
     for i in range(jobs):
 
         output_path = app.config["VARIATION_FOLDER"] + f'/{i+1}_' + output_filename
@@ -120,14 +148,20 @@ def generate_variation(input_path, output_filename, jobs, socket_sid, variation_
                                         roberta_base=roberta_base,
                                         label_dict=label_dict,
                                         reversed_dict=reversed_dict,
-                                        new_notes=False,
-                                        variation_percentage=50,
+                                        new_notes=newnotes,
+                                        variation_percentage=variation_args["variation_amount"],
                                         attributes=attributes,
-                                        temperature_dict=temperature_dict,
+                                        temperature_dict=temperatures,
                                         bars=bars,
-                                        bar_level=False)
+                                        bar_level=barlevel)
         
         write_variations(variations, output_path, reversed_dict)
+        print(attributes)
+        print(bars)
+        print(barlevel)
+        print(newnotes)
+        print(variation_args["variation_amount"])
+        print(variation_args["newnotes_amount"])
 
         socketio.emit('job_complete', {'filename': os.path.basename(output_filename), 'job' : (i+1)}, room=socket_sid)
     
@@ -195,6 +229,7 @@ def upload_file():
     variation_amount = request.form.get('variationamount', type=int)
     newnotes = request.form.get('newnotes', type=str)
     newnotes_amount = request.form.get('newnotesamount', type=int)
+    temperatures = request.form.getlist("temperatures[]", type=int)
 
     variation_args = {
         "attributes" : attributes,
@@ -202,7 +237,8 @@ def upload_file():
         "barlevel" : barlevel,
         "variation_amount" : variation_amount,
         "newnotes" : newnotes,
-        "newnotes_amount" : newnotes_amount
+        "newnotes_amount" : newnotes_amount,
+        "temperatures" : temperatures
     }
 
 

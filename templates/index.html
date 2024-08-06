@@ -101,13 +101,61 @@
         </div>
     </div>
 
-    <div class="MidiVisualiserContainer">
-        <!-- <midi-player
+    <div class="AttributeControlContainer">
+        <!-- <div class="TemperatureDiv">
+            <div class="Temperature Labels">
+                <b>Temperature</b>
+            </div>
+        </div> -->
+        <div>
+            <label for="temperatureSlider">Temperature</label>
+            <input type="range" min="50" max="300" value="100" class="slider" id="temperatureSlider">
+            <span class="slider-value" id="temperatureSliderValue">1</span>
+        </div>
+        <div>
+            <label for="barTemperatureSlider">Bar Temperature</label>
+            <input type="range" min="50" max="300" value="100" class="slider" id="barTemperatureSlider">
+            <span class="slider-value" id="barTemperatureSliderValue">1</span>
+        </div>
+        <div>
+            <label for="positionTemperatureSlider">Position Temperature</label>
+            <input type="range" min="50" max="300" value="100" class="slider" id="positionTemperatureSlider">
+            <span class="slider-value" id="positionTemperatureSliderValue">1</span>
+        </div>
+        <div>
+            <label for="instrumentTemperatureSlider">Instrument Temperature</label>
+            <input type="range" min="50" max="300" value="100" class="slider" id="instrumentTemperatureSlider">
+            <span class="slider-value" id="instrumentTemperatureSliderValue">1</span>
+        </div>
+        <div>
+            <label for="pitchTemperatureSlider">Pitch Temperature</label>
+            <input type="range" min="50" max="300" value="100" class="slider" id="pitchTemperatureSlider">
+            <span class="slider-value" id="pitchTemperatureSliderValue">1</span>
+        </div>
+        <div>
+            <label for="durationTemperatureSlider">Duration Temperature</label>
+            <input type="range" min="50" max="300" value="100" class="slider" id="durationTemperatureSlider">
+            <span class="slider-value" id="durationTemperatureSliderValue">1</span>
+        </div>
+        <div>
+            <label for="timesignatureTemperatureSlider">Time Signature Temperature</label>
+            <input type="range" min="50" max="300" value="100" class="slider" id="timesignatureTemperatureSlider">
+            <span class="slider-value" id="timesignatureTemperatureSliderValue">1</span>
+        </div>
+        <div>
+            <label for="tempoTemperatureSlider">Tempo Temperature</label>
+            <input type="range" min="50" max="300" value="100" class="slider" id="tempoTemperatureSlider">
+            <span class="slider-value" id="tempoTemperatureSliderValue">1</span>
+        </div>
+    </div>
+
+    <!-- <div class="MidiVisualiserContainer">
+        <midi-player
             src="https://magenta.github.io/magenta-js/music/demos/melody.mid"
             sound-font visualizer=".visualizer">
-        </midi-player> -->
+        </midi-player>
         <midi-visualizer type="piano-roll" id="myVisualizer" class="visualizer" src="static/midi/generated.mid"></midi-visualizer>
-    </div>
+    </div> -->
 
     <button id="upload-button" onclick="uploadFile()">Run Job</button>
     <button id="logout" onclick="logout()">Logout</button>
@@ -175,9 +223,25 @@
 
         const variationSlider = document.getElementById('varitionPercentage');
         const newnotesSlider = document.getElementById("NewNotesSlider");
+        const temperatureSlider = document.getElementById("temperatureSlider");
+        const barTemperatureSlider = document.getElementById("barTemperatureSlider");
+        const positionTemperatureSlider = document.getElementById("positionTemperatureSlider");
+        const instrumentTemperatureSlider = document.getElementById("instrumentTemperatureSlider");
+        const pitchTemperatureSlider = document.getElementById("pitchTemperatureSlider");
+        const durationTemperatureSlider = document.getElementById("durationTemperatureSlider");
+        const timesignatureTemperatureSlider = document.getElementById("timesignatureTemperatureSlider");
+        const tempoTemperatureSlider = document.getElementById("tempoTemperatureSlider");
 
         const variationSliderValue = document.getElementById('VariationSliderValue');
         const newnotesSliderValue = document.getElementById("NewNotesSliderValue");
+        const temperatureSliderValue = document.getElementById("temperatureSliderValue");
+        const barTemperatureSliderValue = document.getElementById("barTemperatureSliderValue");
+        const positionTemperatureSliderValue = document.getElementById("positionTemperatureSliderValue");
+        const instrumentTemperatureSliderValue = document.getElementById("instrumentTemperatureSliderValue");
+        const pitchTemperatureSliderValue = document.getElementById("pitchTemperatureSliderValue");
+        const durationTemperatureSliderValue = document.getElementById("durationTemperatureSliderValue");
+        const timesignatureTemperatureSliderValue = document.getElementById("timesignatureTemperatureSliderValue");
+        const tempoTemperatureSliderValue = document.getElementById("tempoTemperatureSliderValue");
 
         variationSlider.addEventListener('input', () => {
             variationSliderValue.textContent = variationSlider.value + "%";
@@ -185,6 +249,38 @@
 
         newnotesSlider.addEventListener('input', () => {
             newnotesSliderValue.textContent = newnotesSlider.value + "%"
+        });
+
+        temperatureSlider.addEventListener('input', () => {
+            temperatureSliderValue.textContent = temperatureSlider.value / 100;
+        });
+
+        barTemperatureSlider.addEventListener('input', () => {
+            barTemperatureSliderValue.textContent = barTemperatureSlider.value / 100;
+        });
+
+        positionTemperatureSlider.addEventListener('input', () => {
+            positionTemperatureSliderValue.textContent = positionTemperatureSlider.value / 100;
+        });
+
+        instrumentTemperatureSlider.addEventListener('input', () => {
+            instrumentTemperatureSliderValue.textContent = instrumentTemperatureSlider.value / 100;
+        });
+
+        pitchTemperatureSlider.addEventListener('input', () => {
+            pitchTemperatureSliderValue.textContent = pitchTemperatureSlider.value / 100;
+        });
+
+        durationTemperatureSlider.addEventListener('input', () => {
+            durationTemperatureSliderValue.textContent = durationTemperatureSlider.value / 100;
+        });
+
+        timesignatureTemperatureSlider.addEventListener('input', () => {
+            timesignatureTemperatureSliderValue.textContent = timesignatureTemperatureSlider.value / 100;
+        });
+
+        tempoTemperatureSlider.addEventListener('input', () => {
+            tempoTemperatureSliderValue.textContent = tempoTemperatureSlider.value / 100;
         });
 
         const bar_level_checkbox = document.getElementById("BarLevelCheckbox");
@@ -400,6 +496,31 @@
 
             // Append the container to the file list
             fileList.insertBefore(fileContainer, fileList.firstChild);
+
+            // temperature
+            const temperatures = [];
+
+            temperatures.push(temperatureSlider.value/100);
+            temperatures.push(barTemperatureSlider.value/100);
+            temperatures.push(positionTemperatureSlider.value/100);
+            temperatures.push(pitchTemperatureSlider.value/100);
+            temperatures.push(durationTemperatureSlider.value/100);
+            temperatures.push(timesignatureTemperatureSlider.value/100);
+            temperatures.push(tempoTemperatureSlider.value/100);
+
+            console.log(temperatures)
+
+            temperatures.forEach((num, index) => {
+                formData.append('temperatures[]', num);
+            });
+
+            // formData.append('temperatures[]', temperatureSlider.value/100);
+            // formData.append('temperatures[]', barTemperatureSlider.value/100);
+            // formData.append('temperatures[]', positionTemperatureSlider.value/100);
+            // formData.append('temperatures[]', pitchTemperatureSlider.value/100);
+            // formData.append('temperatures[]', durationTemperatureSlider.value/100);
+            // formData.append('temperatures[]', timesignatureTemperatureSlider.value/100);
+            // formData.append('temperatures[]', tempoTemperatureSlider.value/100);
 
             // Include sid in the URL or as a query parameter
             const url = `/upload?sid=${socket.id}`;
