@@ -31,8 +31,8 @@
     <div id="dropdown">
         <label for="processing-state">Select Model: </label>
         <select id="processing-state">
-            <option value="Music Transformer">Music Transformer</option>
-            <option value="MusicBert Variation">MusicVAE</option>
+            <option value="MusicBERT">MusicBert</option>
+            <!-- <option value="MusicBert Variation">MusicVAE</option> -->
         </select>
     </div>
 
@@ -69,6 +69,8 @@
             </div>
         </div>
         <div class="AttributeControlContainer" >
+            <label for="EntireTrackCheckbox">Entire Track</label>
+            <input type="checkbox" id="EntireTrackCheckbox" name="EntireTrackCheckbox">
             <div id="BarSelectionContainer">
                 <div class="BarSelectionRow">
                     <label for="startBar" class="startBarLabel">Start Bar</label>
@@ -77,7 +79,10 @@
                     <input type="text"  size=5 id="endBar1" name="endBar1">
                 </div>
             </div>
-            <button id="addBars">Add More</button>
+            <div class="BarButtons">
+                <button id="addBars">Add More</button>
+                <button id="removeBars">Remove Previous</button>
+            </div>
         </div>
         <label for="VariationSlidecontainer" class="controlLabel">Variation Percentage</label>
         <div>
@@ -229,6 +234,23 @@
             processingIcon.alt = 'Failed';
         });
 
+        socket.on("invalid_bar", function(data) {
+            let id = data.filename.concat(`_Job ${data.job}`, "icon");
+            let jobProcessingIcon = document.getElementById(id);
+            jobProcessingIcon.src = 'static/images/failed.jpg';
+            jobProcessingIcon.alt = 'Failed';
+
+            let fileContainer = document.getElementById(data.filename)
+            fileContainer.classList.remove('processing');
+            fileContainer.classList.add('failed');
+
+            let processingIcon = document.getElementById(data.filename.concat("_icon"))
+            processingIcon.src = 'static/images/failed.jpg';
+            processingIcon.alt = 'Failed';
+
+            alert('Job failed due to an invalid bar range. Ensure selected bars are in range of the midi file.')
+        });
+
         let dropArea = document.getElementById('drop-area');
         let fileList = document.getElementById('file-list');
         let fileInput = document.getElementById('file-input');
@@ -319,10 +341,51 @@
             }
         });
 
+        const entire_track_checkbox = document.getElementById("EntireTrackCheckbox");
+        const BarSelectionContainer = document.getElementById('BarSelectionContainer');
+
+        entire_track_checkbox.addEventListener('change', function(){
+            if (entire_track_checkbox.checked) {
+                BarSelectionContainer.classList.add('disabled-slider');
+                bar_level_checkbox.checked = false;
+                bar_level_checkbox.classList.add('disabled-slider');
+            } else {
+                BarSelectionContainer.classList.remove('disabled-slider');
+                bar_level_checkbox.classList.remove('disabled-slider');
+            }
+        });
+
+        document.getElementById("removeBars").addEventListener('click', function(){
+            if (inputBarNum === 2) {
+                alert("Cannot remove last bar.");
+            } else {
+                const BarSelectionContainer = document.getElementById('BarSelectionContainer');
+                const divs = BarSelectionContainer.getElementsByTagName('div');
+                BarSelectionContainer.removeChild(divs[divs.length-1]);
+                inputBarNum -= 1;
+            }
+        });
+
+
         document.getElementById('addBars').addEventListener('click', function(){
             const BarSelectionContainer = document.getElementById('BarSelectionContainer');
             const newBoxRow = document.createElement('div');
             newBoxRow.className = 'BarSelectionRow';
+            
+            const previous_start_id = "startBar" + (inputBarNum-1);
+            const previous_end_id = "endBar" + (inputBarNum-1);
+            const previous_start_input = document.getElementById(previous_start_id).value;
+            const previous_end_input = document.getElementById(previous_end_id).value;
+
+            if (!isPositiveInteger(previous_start_input) || !isPositiveInteger(previous_end_input)) {
+                alert("Ensure current bar range contains positive integers before adding new bar range.")
+                return;
+            }
+
+            if (Number(previous_end_input) < Number(previous_start_input)) {
+                    alert('End Bar must be greater than or equal to the start bar');
+                    return;
+                }
 
             const input1 = document.createElement('input');
             const input1_label = "startBar" + inputBarNum;
@@ -391,6 +454,16 @@
 
         function isMidiFile(file) {
             return file.type === 'audio/midi' || file.name.toLowerCase().endsWith('.midi') || file.name.toLowerCase().endsWith('.mid');
+        }
+
+
+        function isPositiveInteger(value){
+            if (value.trim() === '') {
+                return false;
+            } else {
+                let num = Number(value);
+                return Number.isInteger(num) && num >=0 ;
+            }
         }
 
         function uploadFile(file) {
@@ -470,6 +543,11 @@
             let timesignature = document.getElementById('TimesignatureCheckbox').checked;
             let tempo = document.getElementById('TempoCheckbox').checked;
 
+            if (!(bar || position || instrument || pitch || duration || timesignature || tempo)) {
+                alert('Please select at least one attribute to vary');
+                return;
+            }
+
             formData.append('bar', bar);
             formData.append('position', position);
             formData.append('instrument', instrument);
@@ -484,6 +562,17 @@
             for (let i = 1; i < inputBarNum; i++) {
                 let startBar = document.getElementById('startBar' + i).value;
                 let endBar = document.getElementById('endBar' + i).value;
+                
+                if ((!isPositiveInteger(startBar) || !isPositiveInteger(endBar)) && !entire_track_checkbox.checked) {
+                    alert('Bar values must be positive whole numbers.')
+                    return;
+                }
+
+                if (Number(endBar) < Number(startBar)) {
+                    alert('End Bar must be greater than or equal to the start bar');
+                    return;
+                }
+
                 bars.push(startBar);
                 bars.push(endBar);
             }
@@ -491,6 +580,9 @@
             bars.forEach((num, index) => {
                 formData.append('numbers[]', num);
             });
+
+            // retrieve entire track checkbox
+            formData.append('entire-track', entire_track_checkbox.checked);
 
             // get variation amount
             let barlevel = document.getElementById('BarLevelCheckbox').checked;
