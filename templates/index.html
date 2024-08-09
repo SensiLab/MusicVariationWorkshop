@@ -154,13 +154,13 @@
         </div>
     </div>
 
-    <!-- <div class="MidiVisualiserContainer">
-        <midi-player
+    <div class="MidiVisualiserContainer">
+         <midi-player
             src="https://magenta.github.io/magenta-js/music/demos/melody.mid"
             sound-font visualizer=".visualizer">
         </midi-player>
-        <midi-visualizer type="piano-roll" id="myVisualizer" class="visualizer" src="static/midi/generated.mid"></midi-visualizer>
-    </div> -->
+        <!-- <midi-visualizer type="piano-roll" id="myVisualizer" class="visualizer" src="static/midi/generated.mid"></midi-visualizer> -->
+    </div>
 
     <button id="upload-button" onclick="uploadFile()">Run Job</button>
     <button id="logout" onclick="logout()">Logout</button>
@@ -173,7 +173,8 @@
     <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.5.0"></script>
     <script>
         // Connect to the WebSocket server
-        const socket = io.connect('http://' + document.domain + ':' + location.port);
+        const socket = io.connect('https://' + document.domain + ':' + location.port);
+        // const socket = io.connect('http://' + document.domain + ':' + location.port);
 
         // Event handler for the 'connect' event
         socket.on('connect', function() {

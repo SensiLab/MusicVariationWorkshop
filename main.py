@@ -4,6 +4,7 @@ monkey.patch_all()
 
 import os
 import sys
+import ssl
 import time
 import traceback
 import logging
@@ -16,6 +17,7 @@ from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from MusicVariationBert.generation import generate_variations, write_variations, MusicBERTModel
 from MusicVariationBert.utils import reverse_label_dict
@@ -29,7 +31,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 VARIATION_FOLDER = "variations"
 LOG_FOLDER = "logs"
-SOCKETIO_REDIS_URL = 'redis://130.194.71.74/:6379/0'  
+SOCKETIO_REDIS_URL = 'redis://127.0.0.1/:6379/0'  
 
 logging.basicConfig(filename=os.path.join(LOG_FOLDER, 'app.log'), level=logging.INFO, 
                     format='%(asctime)s %(levelname)s %(message)s')
@@ -313,8 +315,12 @@ if __name__=="__main__":
 
     with app.app_context():
         db.create_all()
-        # new_user("tester", "uncrackablepw1234")
-    
+        # new_user("admin", "Bert@Variation")
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    app.wsgi_app = ProxyFix(
+    app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
+    )
+    # context.load_cert_chain(certfile='testfullchain.pem', keyfile='testkey.pem')
     socketio.run(app, host="0.0.0.0", port=8008, debug=True)
 
 
