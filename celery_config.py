@@ -1,8 +1,8 @@
 from kombu import Exchange, Queue
 
 # Celery configuration
-CELERY_RESULT_BACKEND = 'redis://130.194.71.74:6379/0'  # Use the Redis result backend
-CELERY_BROKER_URL = 'redis://130.194.71.74:6379/0'  # Use Redis as the message broker
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'  # Use the Redis result backend
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'  # Use Redis as the message broker
 
 # Define a Celery task queue
 CELERY_QUEUES = (
