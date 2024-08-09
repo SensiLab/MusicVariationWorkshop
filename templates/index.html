@@ -159,8 +159,10 @@
         </div>
     </div>
 
-    <div class="MidiVisualiserContainer">
+    <div class="MidiVisualiserContainer", id="midi-visualiser-container">
+         <h4 id="midi-player-heading">Some Text</h4>
          <midi-player
+            id="midi-player"
             src="https://magenta.github.io/magenta-js/music/demos/melody.mid"
             sound-font visualizer=".visualizer">
         </midi-player>
@@ -207,10 +209,25 @@
             
             let id = data.filename.concat(`_Job ${data.job}`, "icon");
             let jobProcessingIcon = document.getElementById(id);
-            jobProcessingIcon.src = 'static/images/tick.png';
+            jobProcessingIcon.src = 'static/images/playbutton.jpg';
             jobProcessingIcon.alt = 'Processed';
-            
+
             let filename = `${data.job}_`.concat(data.filename);
+
+            // add on click even for processing icon 
+            jobProcessingIcon.addEventListener('click', function(event) {
+                event.stopPropagation();
+                let midi_player_heading = document.getElementById('midi-player-heading');
+                midi_player_heading.innerText = filename;
+
+                let midi_container = document.getElementById("midi-visualiser-container");
+                midi_container.style.display = 'block';
+
+                let midi_visualiser = document.getElementById('midi-player');
+                midi_visualiser.src = `variations/${filename}`;
+
+            });
+            
 
             let downloadLink = document.createElement('a');
             downloadLink.href = `variations/${filename}`;
