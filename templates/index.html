@@ -143,6 +143,11 @@
             <span class="slider-value" id="durationTemperatureSliderValue">1</span>
         </div>
         <div>
+            <label for="velocityTemperatureSlider">Velocity Temperature</label>
+            <input type="range" min="50" max="300" value="100" class="slider" id="velociyTemperatureSlider">
+            <span class="slider-value" id="velocitynTemperatureSliderValue">1</span>
+        </div>
+        <div>
             <label for="timesignatureTemperatureSlider">Time Signature Temperature</label>
             <input type="range" min="50" max="300" value="100" class="slider" id="timesignatureTemperatureSlider">
             <span class="slider-value" id="timesignatureTemperatureSliderValue">1</span>
@@ -266,6 +271,7 @@
         const instrumentTemperatureSlider = document.getElementById("instrumentTemperatureSlider");
         const pitchTemperatureSlider = document.getElementById("pitchTemperatureSlider");
         const durationTemperatureSlider = document.getElementById("durationTemperatureSlider");
+        const velocityTemperatureSlider = document.getElementById("durationTemperatureSlider");
         const timesignatureTemperatureSlider = document.getElementById("timesignatureTemperatureSlider");
         const tempoTemperatureSlider = document.getElementById("tempoTemperatureSlider");
 
@@ -277,6 +283,7 @@
         const instrumentTemperatureSliderValue = document.getElementById("instrumentTemperatureSliderValue");
         const pitchTemperatureSliderValue = document.getElementById("pitchTemperatureSliderValue");
         const durationTemperatureSliderValue = document.getElementById("durationTemperatureSliderValue");
+        const velocityTemperatureSliderValue = document.getElementById("durationTemperatureSliderValue");
         const timesignatureTemperatureSliderValue = document.getElementById("timesignatureTemperatureSliderValue");
         const tempoTemperatureSliderValue = document.getElementById("tempoTemperatureSliderValue");
 
@@ -310,6 +317,10 @@
 
         durationTemperatureSlider.addEventListener('input', () => {
             durationTemperatureSliderValue.textContent = durationTemperatureSlider.value / 100;
+        });
+
+        velocityTemperatureSlider.addEventListener('input', () => {
+            velocityTemperatureSliderValue.textContent = velocityTemperatureSlider.value / 100;
         });
 
         timesignatureTemperatureSlider.addEventListener('input', () => {
@@ -613,6 +624,7 @@
             temperatures.push(instrumentTemperatureSlider.value/100);
             temperatures.push(pitchTemperatureSlider.value/100);
             temperatures.push(durationTemperatureSlider.value/100);
+            temperatures.push(velocityTemperatureSlider.value/100);
             temperatures.push(timesignatureTemperatureSlider.value/100);
             temperatures.push(tempoTemperatureSlider.value/100);
 
