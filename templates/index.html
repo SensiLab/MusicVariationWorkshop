@@ -16,6 +16,11 @@
         </label>
         <input type="file" id="file-input" multiple>
     </div>
+    <div class="PrompterContainer">
+        <h4>Need help starting a song? Click the button for a prompt.</h4>
+        <p id="prompt"></p>
+        <button id="new_prompt">Click me</button>
+    </div>
     <div id="selected-file"></div>
     <div id="dropdown">
         <label for="processing-state">Select Number of Variations: </label>
@@ -68,7 +73,8 @@
                 <input type="checkbox" id="TempoCheckbox" name="TempoCheckbox">
             </div>
         </div>
-        <div class="AttributeControlContainer" >
+        <label for="bar-container" class="controlLabel">Select Bars to Apply Variation</label>
+        <div class="AttributeControlContainer" id="bar-container">
             <label for="EntireTrackCheckbox">Entire Track</label>
             <input type="checkbox" id="EntireTrackCheckbox" name="EntireTrackCheckbox">
             <div id="BarSelectionContainer">
@@ -179,6 +185,75 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.5.0"></script>
     <script>
+
+    const prompts = [
+        "You are sitting outside on a warm sunny day",
+        "A lost child in a supermarket",
+        "You are relaxing until a spider falls into your lap",
+        "An angry crowd rioting",
+        "You bid a final farewell to an old friend",
+        "A gentle rain falling on a quiet night",
+        "A butterfly emerging from its cocoon",
+        "Walking through a dense, mysterious forest at twilight",
+        "A sudden burst of joy after receiving unexpected good news",
+        "A lone traveler wandering through an abandoned city",
+        "The moment you catch someone's eye across a crowded room",
+        "A spaceship drifting through the vastness of space",
+        "Watching the sunrise after a sleepless night",
+        "A cat stalking its prey in the tall grass",
+        "The tension before a big performance",
+        "A child’s wonder at seeing snow for the first time",
+        "A carnival in full swing, with lights, music, and laughter",
+        "The calm before a thunderstorm rolls in",
+        "Sailing on a calm ocean under a full moon",
+        "A reunion with a long-lost family member",
+        "A secret meeting in a hidden garden",
+        "Dancing through a field of flowers on a breezy day",
+        "The eerie stillness of an empty house at night",
+        "A thrilling chase through the narrow streets of a bustling city",
+        "A dream where everything seems to be floating in slow motion",
+        "A walk along a foggy beach at dawn",
+        "The excitement of opening a long-awaited letter",
+        "Exploring a hidden cave filled with ancient treasures",
+        "The quiet sadness of watching autumn leaves fall",
+        "A fierce storm raging outside while you’re safe indoors",
+        "A playful dance with shadows under a streetlamp",
+        "The nostalgia of finding an old photograph",
+        "A secret whispered between best friends",
+        "The rush of adrenaline during a high-speed race",
+        "A lone bird singing at the break of day",
+        "The magical moment of making a wish upon a star",
+        "A peaceful meadow with wildflowers swaying in the wind",
+        "The first snowfall of the year, covering everything in white",
+        "A heroic rescue in the face of danger",
+        "The mystery of a locked door in an ancient castle",
+        "A child’s laughter echoing through an empty playground",
+        "A bittersweet memory of a summer romance",
+        "A bustling marketplace full of vibrant colors and sounds",
+        "The serenity of a quiet library filled with old books",
+        "A surreal journey through a dreamscape of shifting shapes and colors",
+        "The emptiness of an abandoned childhood home",
+        "A love letter that was never sent",
+        "The last dance at a nearly empty ballroom",
+        "A lonely walk through a rainy city at night",
+        "The quiet pain of unspoken words between two friends",
+        "A final glance at a place you’ll never return to",
+        "The fading memories of a once-happy relationship",
+        "A solitary figure sitting by a grave in the evening",
+        "The sorrow of packing away a loved one’s belongings",
+        "Watching a beloved pet slowly grow old",
+        "A farewell hug at an airport terminal",
+        "The ache of seeing someone you love with someone else",
+        "A melancholic melody played on a distant piano",
+        "The sadness of an empty chair at the dinner table",
+        "A childhood friendship that slowly drifted apart",
+        "The loneliness of an empty park on a winter day",
+        "The quiet despair of unfulfilled dreams",
+        "The lingering scent of perfume after someone has left",
+        "The slow realization that something is forever lost",
+        "The muted grief of watching the sunset alone"
+    ];
+
         // Connect to the WebSocket server
         const socket = io.connect('https://' + document.domain + ':' + location.port);
         // const socket = io.connect('http://' + document.domain + ':' + location.port);
@@ -222,6 +297,7 @@
 
                 let midi_container = document.getElementById("midi-visualiser-container");
                 midi_container.style.display = 'block';
+
 
                 let midi_visualiser = document.getElementById('midi-player');
                 midi_visualiser.src = `variations/${filename}`;
@@ -272,6 +348,16 @@
             processingIcon.alt = 'Failed';
 
             alert('Job failed due to an invalid bar range. Ensure selected bars are in range of the midi file.')
+        });
+
+        // prompts
+
+        const promptButton = document.getElementById('new_prompt');
+
+        promptButton.addEventListener('click', function(){
+            let prompt = document.getElementById('prompt');
+            let randomIndex = Math.floor(Math.random() * prompts.length);
+            prompt.innerText = prompts[randomIndex];
         });
 
         let dropArea = document.getElementById('drop-area');

@@ -166,3 +166,9 @@ h1 {
 .MidiVisualiserContainer {
     display : none;
 }
+
+.PrompterContainer{
+    float: right;
+    border: 2px dashed #ccc;
+    padding: 5px;
+}
