@@ -171,6 +171,7 @@ def generate_variation(input_path, output_filename, jobs, socket_sid, variation_
                                             label_dict=label_dict,
                                             reversed_dict=reversed_dict,
                                             new_notes=newnotes,
+                                            new_notes_percentage=variation_args["newnotes_amount"],
                                             variation_percentage=variation_args["variation_amount"],
                                             attributes=attributes,
                                             temperature_dict=temperatures,
